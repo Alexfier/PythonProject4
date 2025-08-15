@@ -1,19 +1,26 @@
 [tool.poetry]
-name = "project30-1"
+name = "drf-hw"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Maria Maltseva <mariamaltseva1106@gmail.com>"]
 readme = "README.md"
-packages = [{include = "project30"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
+django = "^5.1.6"
+djangorestframework = "^3.15.2"
+python-dotenv = "^1.0.1"
+psycopg2 = "^2.9.10"
+pillow = "^11.1.0"
+black = "^25.1.0"
+isort = "^6.0.1"
+django-filter = "^25.1"
+djangorestframework-simplejwt = "^5.5.0"
+coverage = "^7.8.0"
+drf-spectacular = "^0.28.0"
+stripe = "^12.0.0"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.isort]
-# максимальная длина строки
-line_length = 119
