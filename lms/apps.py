@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class DjangoFiltersConfig(AppConfig):
+class LmsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "django_filters"
+    name = "lms"
