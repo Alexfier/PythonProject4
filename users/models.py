@@ -1,49 +1,86 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-from college.models import Course, Lesson
-
-
-# Create your models here.
+from materials.models import Course, Lesson
 
 
 class User(AbstractUser):
-    username = models.CharField(max_length=50, null=True, blank=True, verbose_name="Имя пользователя")
-    email = models.EmailField(unique=True, verbose_name="Электронная почта")
-    avatar = models.ImageField(upload_to='users/avatars', blank=True, null=True, verbose_name='Аватар',
-                              help_text='Загрузити фотографию')
-    phone_number = models.CharField(max_length=15, verbose_name='Номер телефона', help_text='Введите номер телефона',
-                                    blank=True, null=True)
-    city = models.CharField(max_length=40, verbose_name="Город", blank=True, null=True,
-                               help_text="Введите город проживания")
-
-    def __str__(self):
-        return f'{self.email}'
-
-    class Meta:
-        verbose_name = 'пользователь'
-        verbose_name_plural = "Пользователи"
+    username = None
+    email = models.EmailField(unique=True, verbose_name="Email")
+    phone = models.CharField(
+        max_length=35,
+        verbose_name="Телефон",
+        blank=True,
+        null=True,
+        help_text="Введите номер телефона",
+    )
+    avatar = models.ImageField(
+        upload_to="users/avatars",
+        blank=True,
+        null=True,
+        verbose_name="Аватар",
+        help_text="Загрузите аватар",
+    )
+    city = models.CharField(
+        max_length=35,
+        verbose_name="Город",
+        blank=True,
+        null=True,
+        help_text="Укажите город",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+
 
 class Payment(models.Model):
-    PAYMENT_METHODS = [
-        ("cash", "Наличными"),
-        ("transfer", "Перевод на счет"),
-    ]
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    payment_date = models.DateTimeField(auto_now_add=True)
+    payment_choices = {
+        'Cash': "наличные",
+        'Transfer': "перевод ",
+    }
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь",
+        related_name='user'
+    )
+    date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата'
+    )
     paid_course = models.ForeignKey(
-        Course, null=True, blank=True, on_delete=models.CASCADE
+        Course,
+        on_delete=models.CASCADE,
+        verbose_name='Оплаченный курс',
+        blank=True,
+        null=True,
+        related_name='paid_course'
     )
     paid_lesson = models.ForeignKey(
-        Lesson, null=True, blank=True, on_delete=models.CASCADE
+        Lesson,
+        on_delete=models.CASCADE,
+        verbose_name='Оплаченный урок',
+        blank=True,
+        null=True,
+        related_name='paid_lesson'
     )
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHODS)
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+    payment_type = models.CharField(
+        max_length=50,
+        choices=payment_choices,
+        verbose_name='тип оплаты'
+    )
+
+    class Meta:
+        verbose_name = "Платеж"
+        verbose_name_plural = "Платежи"
+        ordering = ['-date']
 
     def __str__(self):
-        return f"Payment of {self.amount} by {self.user.email} on {self.payment_date}"
+        return f'Пользователь {self.user} оплатил {self.amount}'

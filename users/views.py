@@ -1,20 +1,39 @@
-from rest_framework import generics, filters
+from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
+from users.models import Payment, User
+from users.serializers import PaymentSerializer, UserSerializer
 
-from users.models import Payment
-from users.serliazers import PaymentSerializer
+
+class UserCreateAPIView(CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def perform_create(self, serializer):
+        user = serializer.save(is_active=True)
+        user.set_password(user.password)
+        user.save()
 
 
-# Create your views here.
+class UserListAPIView(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
-class PaymentList(generics.ListAPIView):
+
+class UserUpdateAPIView(UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class PaymentListAPIView(ListAPIView):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
-    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filterset_fields = {
-        "paid_course": ["exact"],
-        "paid_lesson": ["exact"],
-        "payment_method": ["exact"],
-    }
-    ordering_fields = ["payment_date"]
-    ordering = ["payment_date"]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ('paid_lesson', 'paid_course', 'payment_type',)
+    ordering_fields = ('date',)
+
+
+class PaymentCreateAPIView(CreateAPIView):
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
+    
