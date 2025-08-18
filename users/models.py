@@ -1,35 +1,34 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from lms.models import Course, Lesson
+from materials.models import Course, Lesson
 
 
 class User(AbstractUser):
+    username = None
     email = models.EmailField(
-        unique=True,
-        verbose_name="Электронная почта",
-        help_text="Введите электронную почту",
+        unique=True, verbose_name="Почта", help_text="Укажите почту"
     )
     phone = models.CharField(
-        max_length=11,
+        max_length=35,
+        verbose_name="Телефон",
         blank=True,
         null=True,
-        verbose_name="Номер телефона",
-        help_text="Введите номер телефона",
-    )
-    city = models.CharField(
-        max_length=150,
-        blank=True,
-        null=True,
-        verbose_name="Город",
-        help_text="Введите город",
+        help_text="Укажите телефон",
     )
     avatar = models.ImageField(
         upload_to="users/avatars",
         blank=True,
         null=True,
         verbose_name="Аватар",
-        help_text="Загрузите аватар",
+        help_text="Добавьте аватар",
+    )
+    city = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Город",
+        help_text="Укажите город",
     )
 
     USERNAME_FIELD = "email"
@@ -40,55 +39,50 @@ class User(AbstractUser):
         verbose_name_plural = "Пользователи"
 
     def __str__(self):
-        return self.email
+        return f"({self.email})"
 
 
-class Payment(models.Model):
+class Payments(models.Model):
+    CASH = "CASH"
+    ONLINE = "ONLINE"
+    PAYMENTS_VARIANTS = (
+        (CASH, "Наличными"),
+        (ONLINE, "Перевод на счет"),
+    )
+
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name="Пользователь",
-        related_name="payments",
+        User, on_delete=models.CASCADE, verbose_name="Пользователь"
     )
-    date = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name="Дата оплаты"
-    )
-    paid_course = models.ForeignKey(
+    date = models.DateField(auto_now_add=True, verbose_name="Дата оплаты")
+    course = models.ForeignKey(
         Course,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.CASCADE,
         verbose_name="Оплаченный курс",
-        related_name="payments",
+        blank=True,
+        null=True,
     )
-    paid_lesson = models.ForeignKey(
+    lesson = models.ForeignKey(
         Lesson,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.CASCADE,
         verbose_name="Оплаченный урок",
-        related_name="payments",
-    )
-    amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
         blank=True,
-        verbose_name="Сумма оплаты",
-    )
-    payment_method = models.CharField(
-        max_length=20,
-        choices=(("cash", "Наличные"), ("transfer", "Перевод на счет")),
         null=True,
-        blank=True,
-        verbose_name="Способ оплаты",
     )
+    payment_amount = models.PositiveIntegerField(
+        verbose_name="Сумма оплаты", help_text="Укажите сумму оплаты"
+    )
+    payment_method = models.CharField(max_length=50, choices=PAYMENTS_VARIANTS)
 
-    class Meta:
-        verbose_name = "Платеж"
-        verbose_name_plural = "Платежи"
+    session_id = models.CharField(
+        max_length=400, verbose_name="ID сессии", blank=True, null=True
+    )
+    link = models.URLField(
+        max_length=400, verbose_name="ссылка на оплату", blank=True, null=True
+    )
 
     def __str__(self):
-        return self.user
+        return f"{self.user} - {self.course if self.course else self.lesson} - {self.payment_amount}"
+
+    class Meta:
+        verbose_name = "платеж"
+        verbose_name_plural = "платежи"
